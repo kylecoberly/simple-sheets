@@ -21,7 +21,7 @@ function getRows(rows, options){
         if (!rows.mapping || !rows.mapping.length){
             reject("Need valid mappings");
         }
-        if (!rows.ranges || !rows.ranges.length){
+        if (!rows.range){
             reject("Need valid A1 ranges");
         }
         if (!rows.description){
