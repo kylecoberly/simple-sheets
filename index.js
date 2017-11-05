@@ -8,8 +8,8 @@ function getRows(ranges, mappings, options){
         if (!mappings || !mappings.length){
             reject("Need valid mappings");
         }
-        if (!options || !options.speadsheetId){
-            reject("Need valid speadsheetId");
+        if (!options || !options.spreadsheetId){
+            reject("Need valid spreadsheetId");
         }
         google.sheets({
             version: "v4",
