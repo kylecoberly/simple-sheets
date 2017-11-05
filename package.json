@@ -1,6 +1,6 @@
 {
     "name": "simple-sheets-reader",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Provides a simple, promise-based API for reading Google Sheets data.",
     "main": "index.js",
     "scripts": {

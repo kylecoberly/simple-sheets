@@ -21,7 +21,7 @@ function getRows(ranges, mappings, options){
                 null
             )
         }).spreadsheets.values.batchGet({
-            options.spreadsheetId,
+            speadsheetId: options.spreadsheetId,
             ranges,
             majorDimension: "ROWS",
             dateTimeRenderOption: options.dateTimeRenderOption || "FORMATTED_STRING"
