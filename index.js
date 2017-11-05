@@ -31,7 +31,7 @@ function getRows(ranges, mappings, options){
         });
     }).then(sheets => sheets.valueRanges)
     .then(rangesToArrays)
-    .then(arraysToMaps.bind(null, keys))
+    .then(arraysToMaps.bind(null, mappings))
     .catch(console.error);
 }
 
