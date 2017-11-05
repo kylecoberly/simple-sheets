@@ -13,62 +13,65 @@ function getSheets(emailVariable, privateKeyVariable){
     }).spreadsheets.values.batchGet;
 }
 
-function getRows(ranges, mappings, options){
+function getRows(rows, options){
     return new Promise(function(resolve, reject){
-        if (!ranges || !ranges.length){
-            reject("Need valid ranges");
+        if (!rows || !rows.length){
+            reject("Need valid rows");
         }
-        if (!mappings || !mappings.length){
+        if (!rows.mapping || !rows.mapping.length){
             reject("Need valid mappings");
+        }
+        if (!rows.ranges || !rows.ranges.length){
+            reject("Need valid A1 ranges");
+        }
+        if (!rows.description){
+            reject("Need valid description");
         }
         if (!options || !options.spreadsheetId){
             reject("Need valid spreadsheetId");
         }
         getSheets(options.emailVariable, options.privateKeyVariable)({
             spreadsheetId: options.spreadsheetId,
-            ranges,
+            ranges: getRanges(rows),
             majorDimension: "ROWS",
             dateTimeRenderOption: options.dateTimeRenderOption || "FORMATTED_STRING"
         }, function(error, response){
             if (error){reject(error);}
             resolve(response);
         });
-    }).then(sheetsToMappedObject.bind(null, mappings))
+    }).then(sheetsToMappedObject.bind(null, rows))
     .catch(console.error);
 }
 
-function sheetsToMappedObject(mappings, sheet){
-    return arraysToMaps(mappings, getValueRanges(sheet));
+function getRanges(rows){
+    return rows.map(row => row.range);
 }
 
-function getValueRanges(sheet){
-    return sheet.valueRanges.map(valueRange => valueRange.values);
+function sheetsToMappedObject(rows, sheets){
+    return rows.reduce((accumulator, row, index) => {
+        accumulator[row.label] = rowsToMaps(row.mapping, sheets.valueRanges[index].values);
+        return accumulator;
+    }, {});
 }
 
-function arraysToMaps(keys, rangeArrays){
-    return rangeArrays.map((rangeRows, index) => {
-        return arrayToMap(keys[index], rangeRows);
-    });
+function rowsToMaps(keys, rows){
+    return rows.map(rowToMap.bind(null, keys));
 }
 
-function arrayToMap(keys, arrays){
-    return arrays.map(arrayToObject.bind(null, keys));
-}
-
-function arrayToObject(keys, values){
+function rowToMap(keys, values){
     if (!keys || !keys.length || !values || !values.length){
         return {};
     }
-    const row = {};
-    keys.forEach((key, index) => row[key] = values[index]);
-    return row;
+    return keys.reduce((accumulator, key, index) => {
+        accumulator[key] = values[index];
+        return accumulator;
+    }, {});
 }
 
 module.exports = {
     getRows,
-    arrayToObject,
-    arraysToMaps,
-    arrayToMap,
+    rowsToMaps,
+    rowToMap,
     sheetsToMappedObject,
-    getValueRanges
+    getRanges
 };

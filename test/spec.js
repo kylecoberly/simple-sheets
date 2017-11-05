@@ -35,8 +35,14 @@ describe("#sheetsToMappedObject", ()=>{
                 ]
             }]
         };
-        assert.deepEqual(code.sheetsToMappedObject([["date", "id"],["name"]], fixture), [
-            [{
+        assert.deepEqual(code.sheetsToMappedObject([{
+            label: "submissions",
+            mapping: ["date", "id"]
+        },{
+            label: "people",
+            mapping: ["name"]
+        }], fixture), {
+            submissions: [{
                 date: "10/17/2017 12:11:21",
                 id: "17",
             },{
@@ -45,90 +51,55 @@ describe("#sheetsToMappedObject", ()=>{
             },{
                 date: "10/17/2017 13:02:11",
                 id: "7",
-            }],[{
+            }],
+            people: [{
                 name: "Kevin Kingdon"
             },{
                 name: "Jay Farnsworth"
             }]
-        ]);
+        });
     });
 });
-describe("#arrayToObject", ()=>{
+
+describe("#rowToMap", ()=>{
     it("converts a google sheets array to an object", ()=>{
-        const result = code.arrayToObject(["keyOne", "keyTwo"], ["valueOne", "valueTwo"]);
+        const result = code.rowToMap(["keyOne", "keyTwo"], ["valueOne", "valueTwo"]);
         assert.deepEqual(result, {
             keyOne: "valueOne",
             keyTwo: "valueTwo"
         });
     });
     it("returns an empty object if there are no keys", ()=>{
-        assert.deepEqual(code.arrayToObject([], ["valueOne", "valueTwo"]), {});
-        assert.deepEqual(code.arrayToObject(null, ["valueOne", "valueTwo"]), {});
+        assert.deepEqual(code.rowToMap([], ["valueOne", "valueTwo"]), {});
+        assert.deepEqual(code.rowToMap(null, ["valueOne", "valueTwo"]), {});
     });
     it("returns an empty object if there are no values", ()=>{
-        assert.deepEqual(code.arrayToObject(["keyOne", "keyTwo"], []), {});
-        assert.deepEqual(code.arrayToObject(["keyOne", "keyTwo"], null), {});
+        assert.deepEqual(code.rowToMap(["keyOne", "keyTwo"], []), {});
+        assert.deepEqual(code.rowToMap(["keyOne", "keyTwo"], null), {});
     });
     it("returns an empty object if there are no keys or values", ()=>{
-        assert.deepEqual(code.arrayToObject([], []), {});
-        assert.deepEqual(code.arrayToObject([], null), {});
-        assert.deepEqual(code.arrayToObject(null, []), {});
-        assert.deepEqual(code.arrayToObject(null, null), {});
+        assert.deepEqual(code.rowToMap([], []), {});
+        assert.deepEqual(code.rowToMap([], null), {});
+        assert.deepEqual(code.rowToMap(null, []), {});
+        assert.deepEqual(code.rowToMap(null, null), {});
     });
 });
 
-describe("#arraysToMaps", ()=>{
-    it("converts arrays to maps", ()=>{
-        assert.deepEqual(code.arraysToMaps(
-            [["one", "two"],["three"]],
-            [[[1, 2], [3, 4]], [[5]]]
-        ),
-            [
-                [{ one: 1, two: 2},{one: 3, two: 4}],
-                [{three: 5}]
-            ]
-        );
+describe("#rowsToMaps", ()=>{
+    it("converts rows to maps", ()=>{
+        assert.deepEqual(code.rowsToMaps(["one", "two"], [[1, 2], [3, 4]]), [{one: 1, two: 2}, {one: 3, two: 4}]);
     });
-    it("returns empty objects if the array doesn't have values", ()=>{
-        assert.deepEqual(code.arraysToMaps([], [[], []]), [{}, {}]);
+    it("returns empty objects if the row doesn't have values", ()=>{
+        assert.deepEqual(code.rowsToMaps([], [[], []]), [{}, {}]);
     });
 });
 
-describe("#arrayToMap", ()=>{
-    it("converts an array to a map", ()=>{
-        assert.deepEqual(code.arrayToMap(["one", "two"], [[1, 2], [3, 4]]), [{one: 1, two: 2}, {one: 3, two: 4}]);
-    });
-    it("returns empty objects if the array doesn't have values", ()=>{
-        assert.deepEqual(code.arrayToMap([], [[], []]), [{}, {}]);
-    });
-});
-
-describe("#getValueRanges", ()=>{
-    it("extracts the value ranges from a sheets response", ()=>{
-        const sheetsResponse = {
-            "spreadsheetId": "10SUCLi3IhEfbDYzEyJ5a4YyqdSyV5u_SpGYhrWzybr8",
-            "valueRanges": [{
-                "range": "'Project Submissions'!A2:B4",
-                "majorDimension": "ROWS",
-                "values": [[
-                    "a",
-                    1
-                ],[
-                    "b",
-                    2
-                ]]
-            },{
-                "range": "'Project Submissions'!A2:B4",
-                "majorDimension": "ROWS",
-                "values": [[
-                    "c",
-                    3
-                ],[
-                    "d",
-                    4
-                ]]
-            }]
-        };
-        assert.deepEqual(code.getValueRanges(sheetsResponse), [[["a", 1],["b", 2]],[["c", 3],["d", 4]]]);
+describe("#getRanges", ()=>{
+    it("can extract ranges from row objects", ()=>{
+        assert.deepEqual(code.getRanges([{
+            range: "A2:B",
+        },{
+            range: "'Cities'!C2:C",
+        }]), ["A2:B", "'Cities'!C2:C"]);
     });
 });
