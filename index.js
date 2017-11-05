@@ -18,15 +18,6 @@ function getRows(rows, options){
         if (!rows || !rows.length){
             reject("Need valid rows");
         }
-        if (!rows.mapping || !rows.mapping.length){
-            reject("Need valid mappings");
-        }
-        if (!rows.range){
-            reject("Need valid A1 ranges");
-        }
-        if (!rows.description){
-            reject("Need valid description");
-        }
         if (!options || !options.spreadsheetId){
             reject("Need valid spreadsheetId");
         }
@@ -44,11 +35,23 @@ function getRows(rows, options){
 }
 
 function getRanges(rows){
-    return rows.map(row => row.range);
+    return rows.map(row => {
+        if (!row.range){
+            throw new Error("Need valid A1 ranges");
+        } else {
+            return row.range
+        }
+    });
 }
 
 function sheetsToMappedObject(rows, sheets){
     return rows.reduce((accumulator, row, index) => {
+        if (!row.mapping || !row.mapping.length){
+            throw new Error("Need valid mapping");
+        }
+        if (!row.label){
+            throw new Error("Need valid label");
+        }
         accumulator[row.label] = rowsToMaps(row.mapping, sheets.valueRanges[index].values);
         return accumulator;
     }, {});
