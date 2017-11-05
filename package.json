@@ -1,24 +1,28 @@
 {
     "name": "simple-sheets-reader",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "Provides a simple, promise-based API for reading Google Sheets data.",
     "main": "index.js",
     "scripts": {
+        "test": "./node_modules/mocha/bin/mocha -wG"
     },
     "keywords": [
         "google",
         "sheets",
-        "oauth2"
+        "oauth2",
+        "simple"
     ],
     "author": "Kyle Coberly",
     "license": "MIT",
     "bugs": "https://www.github.com/kylecoberly/simple-sheets-reader/issues",
-    "repository" : {
-        "type" : "git",
-        "url" : "https://github.com/kylecoberly/simple-sheets-reader.git"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kylecoberly/simple-sheets-reader.git"
     },
     "dependencies": {
-        "dotenv": "^4.0.0",
         "googleapis": "^16.1.0"
+    },
+    "devDependencies": {
+        "mocha": "^4.0.1"
     }
 }

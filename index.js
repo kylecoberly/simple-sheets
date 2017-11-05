@@ -1,30 +1,62 @@
-require("dotenv").load();
+const google = require("googleapis");
 
-var google = require("googleapis");
-var sheets = google.sheets({
-    version: "v4",
-    auth: new google.auth.JWT(
-        process.env.SHEETS_CLIENT_EMAIL,
-        null,
-        process.env.SHEETS_PRIVATE_KEY.replace(/\\n/g, "\n"),
-        ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-        null
-    )
-}).spreadsheets;
-
-function getSurveyData(sheets, spreadsheetId, ranges, options){
-    options = options || {};
+function getRows(ranges, mappings, options){
     return new Promise(function(resolve, reject){
-        sheets.values.batchGet({
-            spreadsheetId,
+        if (!ranges || !ranges.length){
+            reject("Need valid ranges");
+        }
+        if (!mappings || !mappings.length){
+            reject("Need valid mappings");
+        }
+        if (!options || !options.speadsheetId){
+            reject("Need valid speadsheetId");
+        }
+        google.sheets({
+            version: "v4",
+            auth: new google.auth.JWT(
+                process.env[options.emailVariable || "SHEETS_CLIENT_EMAIL"],
+                null,
+                process.env[options.privateKeyVariable || "SHEETS_PRIVATE_KEY"].replace(/\\n/g, "\n"),
+                ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+                null
+            )
+        }).spreadsheets.values.batchGet({
+            options.spreadsheetId,
             ranges,
-            majorDimension: options.majorDimension || "COLUMNS",
+            majorDimension: "ROWS",
             dateTimeRenderOption: options.dateTimeRenderOption || "FORMATTED_STRING"
         }, function(error, response){
             if (error){reject(error);}
             resolve(response);
         });
+    }).then(sheets => sheets.valueRanges)
+    .then(rangesToArrays)
+    .then(arraysToMaps.bind(null, keys))
+    .catch(console.error);
+}
+
+function rangesToArrays(ranges){
+    return ranges.map(range => range.values);
+}
+
+function arraysToMaps(keys, arrays){
+    return arrays.map(array => {
+        return arrayToObject(keys, array);
     });
 }
 
-module.exports = getSurveyData.bind(null, sheets);
+function arrayToObject(keys, values){
+    if (!keys || !keys.length || !values || !values.length){
+        return {};
+    }
+    const row = {};
+    keys.forEach((key, index) => row[key] = values[index]);
+    return row;
+}
+
+module.exports = {
+    getRows,
+    arrayToObject,
+    rangesToArrays,
+    arraysToMaps
+};
