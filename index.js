@@ -1,40 +1,40 @@
 const google = require("googleapis");
 
-function getSheets(emailVariable, privateKeyVariable){
-    return google.sheets({
-        version: "v4",
-        auth: new google.auth.JWT(
-            process.env[emailVariable || "SHEETS_CLIENT_EMAIL"],
-            null,
-            process.env[privateKeyVariable || "SHEETS_PRIVATE_KEY"].replace(/\\n/g, "\n"),
-            ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-            null
-        )
-    }).spreadsheets.values.batchGet;
-}
-
 function getRows(rows, options){
-    return new Promise(function(resolve, reject){
+    return new Promise((resolve, reject) => {
         if (!rows || !rows.length){
             reject("Need valid rows");
         }
         if (!options || !options.spreadsheetId){
             reject("Need valid spreadsheetId");
         }
-        getSheets(options.emailVariable, options.privateKeyVariable)({
+        _sheets(options.clientEmail, options.privateKey).batchGet({
             spreadsheetId: options.spreadsheetId,
-            ranges: getRanges(rows),
+            ranges: _getRanges(rows),
             majorDimension: "ROWS",
             dateTimeRenderOption: options.dateTimeRenderOption || "FORMATTED_STRING"
-        }, function(error, response){
+        }, (error, response) => {
             if (error){reject(error);}
             resolve(response);
         });
-    }).then(sheetsToMappedObject.bind(null, rows))
+    }).then(_sheetsToMappedObject.bind(null, rows))
     .catch(console.error);
 }
 
-function getRanges(rows){
+function _sheets(clientEmail, privateKey){
+    return google.sheets({
+        version: "v4",
+        auth: new google.auth.JWT(
+            clientEmail,
+            null,
+            privateKey,
+            ["https://www.googleapis.com/auth/spreadsheets"],
+            null
+        )
+    }).spreadsheets.values;
+}
+
+function _getRanges(rows){
     return rows.map(row => {
         if (!row.range){
             throw new Error("Need valid A1 ranges");
@@ -44,7 +44,7 @@ function getRanges(rows){
     });
 }
 
-function sheetsToMappedObject(rows, sheets){
+function _sheetsToMappedObject(rows, sheets){
     return rows.reduce((accumulator, row, index) => {
         if (!row.mapping || !row.mapping.length){
             throw new Error("Need valid mapping");
@@ -52,16 +52,16 @@ function sheetsToMappedObject(rows, sheets){
         if (!row.label){
             throw new Error("Need valid label");
         }
-        accumulator[row.label] = rowsToMaps(row.mapping, sheets.valueRanges[index].values);
+        accumulator[row.label] = _rowsToMaps(row.mapping, sheets.valueRanges[index].values);
         return accumulator;
     }, {});
 }
 
-function rowsToMaps(keys, rows){
-    return rows.map(rowToMap.bind(null, keys));
+function _rowsToMaps(keys, rows){
+    return rows.map(_rowToMap.bind(null, keys));
 }
 
-function rowToMap(keys, values){
+function _rowToMap(keys, values){
     if (!keys || !keys.length || !values || !values.length){
         return {};
     }
@@ -73,8 +73,9 @@ function rowToMap(keys, values){
 
 module.exports = {
     getRows,
-    rowsToMaps,
-    rowToMap,
-    sheetsToMappedObject,
-    getRanges
+    _sheets,
+    _rowsToMaps,
+    _rowToMap,
+    _sheetsToMappedObject,
+    _getRanges
 };
