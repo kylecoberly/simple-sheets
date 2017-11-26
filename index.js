@@ -21,6 +21,47 @@ function getRows(rows, options){
     .catch(console.error);
 }
 
+function updateRows(data, options){
+    return new Promise((resolve, reject) => {
+        if (!data || !data.length){reject("Need data")}
+        if (!options || !options.spreadsheetId){reject("Need valid spreadsheetId")}
+
+        _sheets(options.clientEmail, options.privateKey).batchUpdate({
+            spreadsheetId: options.spreadsheetId,
+            resource: {
+                valueInputOption: options.valueInputOption || "USER_ENTERED",
+                data
+            }
+        }, (error, response) => {
+            if (error){reject(error);}
+            resolve(response);
+        });
+    }).then(response => ({updatedRows: response.totalUpdatedRows}))
+    .catch(console.error);
+}
+
+function addRows(range, data, options){
+    return new Promise((resolve, reject) => {
+        if (!range){reject("Need range")}
+        if (!data || !data.length){reject("Need data")}
+        if (!options || !options.spreadsheetId){reject("Need valid spreadsheetId")}
+
+        _sheets(options.clientEmail, options.privateKey).append({
+            spreadsheetId: options.spreadsheetId,
+            range,
+            valueInputOption: options.valueInputOption || "USER_ENTERED",
+            insertDataOption: "INSERT_DATA",
+            resource: {
+                values: data
+            }
+        }, (error, response) => {
+            if (error){reject(error)}
+            resolve(response);
+        });
+    }).then(response => ({updatedRows: response.updates.updatedRows}))
+    .catch(console.error);
+}
+
 function _sheets(clientEmail, privateKey){
     return google.sheets({
         version: "v4",
@@ -73,6 +114,8 @@ function _rowToMap(keys, values){
 
 module.exports = {
     getRows,
+    updateRows,
+    addRows,
     _sheets,
     _rowsToMaps,
     _rowToMap,
