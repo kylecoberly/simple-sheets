@@ -2,12 +2,12 @@ const google = require("googleapis");
 
 function getRows(rows, options){
     return new Promise((resolve, reject) => {
-        if (!rows || !rows.length){
-            reject("Need valid rows");
-        }
-        if (!options || !options.spreadsheetId){
-            reject("Need valid spreadsheetId");
-        }
+        if (!rows || !rows.length){reject("Need valid rows")}
+        if (!options){reject("Need valid options")}
+        if (!options.spreadsheetId || typeof options.privateKey !== "string"){reject("Need valid spreadsheetId")}
+        if (!options.clientEmail || typeof options.privateKey !== "string"){reject("Need valid clientEmail")}
+        if (!options.privateKey || typeof options.privateKey !== "string"){reject("Need valid privateKey")}
+
         _sheets(options.clientEmail, options.privateKey).batchGet({
             spreadsheetId: options.spreadsheetId,
             ranges: _getRanges(rows),
@@ -24,7 +24,10 @@ function getRows(rows, options){
 function updateRows(data, options){
     return new Promise((resolve, reject) => {
         if (!data || !data.length){reject("Need data")}
-        if (!options || !options.spreadsheetId){reject("Need valid spreadsheetId")}
+        if (!options){reject("Need valid options")}
+        if (!options.spreadsheetId || typeof options.privateKey !== "string"){reject("Need valid spreadsheetId")}
+        if (!options.clientEmail || typeof options.privateKey !== "string"){reject("Need valid clientEmail")}
+        if (!options.privateKey || typeof options.privateKey !== "string"){reject("Need valid privateKey")}
 
         _sheets(options.clientEmail, options.privateKey).batchUpdate({
             spreadsheetId: options.spreadsheetId,
@@ -44,7 +47,10 @@ function addRows(range, data, options){
     return new Promise((resolve, reject) => {
         if (!range){reject("Need range")}
         if (!data || !data.length){reject("Need data")}
-        if (!options || !options.spreadsheetId){reject("Need valid spreadsheetId")}
+        if (!options){reject("Need valid options")}
+        if (!options.spreadsheetId || typeof options.privateKey !== "string"){reject("Need valid spreadsheetId")}
+        if (!options.clientEmail || typeof options.privateKey !== "string"){reject("Need valid clientEmail")}
+        if (!options.privateKey || typeof options.privateKey !== "string"){reject("Need valid privateKey")}
 
         _sheets(options.clientEmail, options.privateKey).append({
             spreadsheetId: options.spreadsheetId,
@@ -68,7 +74,7 @@ function _sheets(clientEmail, privateKey){
         auth: new google.auth.JWT(
             clientEmail,
             null,
-            privateKey,
+            privateKey.replace(/\\n/g, "\n"),
             ["https://www.googleapis.com/auth/spreadsheets"],
             null
         )
