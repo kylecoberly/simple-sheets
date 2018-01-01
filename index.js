@@ -99,7 +99,7 @@ function _sheetsToMappedObject(rows, sheets){
         if (!row.label){
             throw new Error("Need valid label");
         }
-        accumulator[row.label] = _rowsToMaps(row.mapping, sheets.valueRanges[index].values);
+        accumulator[row.label] = _rowsToMaps(row.mapping, sheets.valueRanges[index].values || []);
         return accumulator;
     }, {});
 }
