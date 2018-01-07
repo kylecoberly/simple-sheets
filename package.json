@@ -1,6 +1,6 @@
 {
     "name": "simple-sheets",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Provides a simple, promise-based API for reading and writing Google Sheets data.",
     "main": "index.js",
     "scripts": {

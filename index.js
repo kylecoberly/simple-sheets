@@ -68,7 +68,7 @@ function addRows(range, data, options){
     .catch(console.error);
 }
 
-function _sheets(clientEmail, privateKey){
+function _sheets(clientEmail, privateKey = ""){
     return google.sheets({
         version: "v4",
         auth: new google.auth.JWT(
