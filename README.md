@@ -4,6 +4,8 @@ Reads and writes Google Sheets row data, perfect for sheets populated by Google 
 
 Authenticates via a [Google Service Account](https://cloud.google.com/iam/docs/understanding-service-accounts) by passing in the `client_email` and `private_key` values provided by the `.json` file that Google Service Accounts generate. See [service-account-credentials.json](service-account-credentials.json) for an example.
 
+Now includes tools for clearing and seeding sheets with data, which is useful for writing automated tests against spreadsheets.
+
 ## API
 
 ### `getRows`
@@ -169,6 +171,132 @@ addRows("'Form Responses'!A2:B", [
     {
         updatedRows: 2
     }
+    */
+}).catch(console.error);
+```
+
+### `clearSheets`
+
+```js
+clearSheets(sheets, options).then();
+```
+
+`sheets` is an array of sheet names, following the following format:
+
+```js
+["First Sheet Name", "Second"]
+```
+
+`options` include:
+
+* `spreadsheetId` (required): The ID of the Google sheet, which is the long string in the URL of the page
+* `clientEmail` (required): The authorized `client_email` for your service account (remember to add permissions for this email to your sheet!)
+* `privateKey` (required): the authorized `private_key` for your service account
+
+It returns an array containing the counts of modified rows in each sheet.
+
+#### Usage
+
+```js
+const {clearSheets} = require("simple-sheets");
+const PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\nMIIEAoIBAQCwmz3cj...ee+Z81xUH4QTo18s=\n-----END PRIVATE KEY-----\n";
+
+clearSheets(["First Sheet Name", "Second"], {
+    spreadsheetId: "9wLECuzvVpx8z7Ux5_9if_wdTDwhxXRcJZpJ-xhVeJRs",
+    clientEmail: "test-account@fast-ability-145401.iam.gserviceaccount.com",
+    privateKey: PRIVATE_KEY
+}).then(response => {
+    /*
+    [{
+        updatedRows: 4
+    },{
+        updatedRows: 2
+    }]
+    */
+}).catch(console.error);
+```
+
+### `seedSheets`
+
+```js
+seedSheets(sheets, options).then();
+```
+
+`sheets` is an array of sheet objects, following the following format:
+
+```js
+[{
+    sheetName: "Sheet 1",
+    mapping: ["column1", "column2"],
+    seedData: [{
+        column1: "a",
+        column2: "b",
+    },{
+        column1: "c",
+        column2: "d",
+    }]
+},{
+    sheetName: "Sheet 2",
+    mapping: ["column1", "optionalColumn"],
+    seedData: [{
+        column1: "e",
+        optionalColumn: "f"
+    },{
+        column1: "g"
+    }]
+}]
+```
+
+Please note the following:
+
+* This method assumes the first row is headers
+* The mapping must include all column labels, in order
+* The seed columns can be entered in any order (and can even be omitted), but must have a matching mapping value
+
+`options` include:
+
+* `spreadsheetId` (required): The ID of the Google sheet, which is the long string in the URL of the page
+* `clientEmail` (required): The authorized `client_email` for your service account (remember to add permissions for this email to your sheet!)
+* `privateKey` (required): the authorized `private_key` for your service account
+
+It returns an array containing the counts of modified rows in each sheet.
+
+#### Usage
+
+```js
+const {clearSheets} = require("simple-sheets");
+const PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\nMIIEAoIBAQCwmz3cj...ee+Z81xUH4QTo18s=\n-----END PRIVATE KEY-----\n";
+
+seedSheets([{
+    sheetName: "Sheet 1",
+    mapping: ["column1", "column2"],
+    seedData: [{
+        column1: "a",
+        column2: "b",
+    },{
+        column1: "c",
+        column2: "d",
+    }]
+},{
+    sheetName: "Sheet 2",
+    mapping: ["column1", "optionalColumn"],
+    seedData: [{
+        column1: "e",
+        optionalColumn: "f"
+    },{
+        column1: "g"
+    }]
+}],{
+    spreadsheetId: "9wLECuzvVpx8z7Ux5_9if_wdTDwhxXRcJZpJ-xhVeJRs",
+    clientEmail: "test-account@fast-ability-145401.iam.gserviceaccount.com",
+    privateKey: PRIVATE_KEY
+}).then(response => {
+    /*
+    [{
+        updatedRows: 2
+    },{
+        updatedRows: 2
+    }]
     */
 }).catch(console.error);
 ```
